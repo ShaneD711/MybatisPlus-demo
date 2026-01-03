@@ -1,5 +1,8 @@
 package mp.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import mp.domain.po.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +55,17 @@ class UserMapperTest {
     }
 
     /**
+     * 测试根据id列表查询用户
+     * 根据自定义SQL语句查询
+     */
+    @Test
+    void testQueryByIds2() {
+        List<User> users = userMapper.queryUserByIds(List.of(1L, 2L, 3L, 4L));
+        users.forEach(System.out::println);
+    }
+
+
+    /**
      * 测试根据id更新用户
      */
     @Test
@@ -69,4 +83,75 @@ class UserMapperTest {
     void testDeleteUser() {
         userMapper.deleteById(5L);
     }
+
+    /**
+     * QueryWrapper
+     * <p>
+     * 查询出名字中带o的 存款大于等于100元的人的id username info balance
+     * SELECT id ,username ,info ,balance FROM user WHERE username LIKE ? AND balance = ?
+     */
+    @Test
+    void testqueryWrapper() {
+        // 构建查询条件
+        QueryWrapper<User> wrapper = new QueryWrapper<User>()
+                .select("id", "username", "info", "balance")
+                .like("username", "Lucy")
+                .ge("balance", 100);
+        // 执行查询
+        List<User> users = userMapper.selectList(wrapper);
+        users.forEach(System.out::println);
+    }
+
+    /**
+     * QueryWrapper
+     * <p>
+     * 更新用户名为jack的用户余额为2000
+     * UPDATE user SET balance = 2000 WHERE (username = "jack")
+     */
+    @Test
+    void testUpdateByQueryWrapper() {
+        // 创建要更新的数据对象
+        User user = new User();
+        user.setBalance(2000);
+        // 更新的条件
+        QueryWrapper<User> wrapper = new QueryWrapper<User>()
+                .eq("username", "jack");
+        // 执行更新
+        userMapper.update(user, wrapper);
+    }
+
+
+    /**
+     * UpdateWrapper
+     * <p>
+     * 更新id为1,2,4的用户的余额,扣200
+     * UPDATE user SET balance = balance -200 WHERE id in (1,2,4)
+     */
+    @Test
+    void testUpdateWrapper() {
+        List<Long> ids = List.of(1L, 2L, 3L, 4L);
+        UpdateWrapper<User> wrapper = new UpdateWrapper<User>()
+                .setSql("balance = balance - 100")
+                .in("id", ids);
+        userMapper.update(null, wrapper);
+    }
+
+    /**
+     * LambdaQueryWrapper
+     * 查询出名字中带o的 存款大于等于100元的人的id username info balance
+     * SELECT id ,username ,info ,balance FROM user WHERE username LIKE ? AND balance = ?
+     */
+    @Test
+    void testLambdaQueryWrapper() {
+        // 构建查询条件
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
+                .select(User::getId, User::getUsername, User::getInfo, User::getBalance)
+                .like(User::getUsername,"o")
+                .ge(User::getBalance,100);
+        // 执行查询
+        List<User> users = userMapper.selectList(wrapper);
+        users.forEach(System.out::println);
+    }
+
+
 }
