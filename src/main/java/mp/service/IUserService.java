@@ -8,4 +8,10 @@ import mp.domain.po.User;
  */
 public interface IUserService extends IService<User> {
 
+    /**
+     * 扣减用户余额
+     * @param id
+     * @param money
+     */
+    void deductBalance(Long id, Integer money);
 }

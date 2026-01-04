@@ -14,4 +14,31 @@ public class UserServiceImpl
         extends ServiceImpl<UserMapper, User>
         implements IUserService {
 
+    private final UserMapper userMapper;
+
+    public UserServiceImpl(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
+    /**
+     * 扣减用户余额
+     *
+     * @param id
+     * @param money
+     */
+    @Override
+    public void deductBalance(Long id, Integer money) {
+        // 查询用户
+        User user = getById(id);
+        // 校验用户状态
+        if (user == null || user.getStatus() == 2) {
+            throw new RuntimeException("用户状态异常");
+        }
+        // 校验余额是否充足
+        if (user.getBalance() < money) {
+            throw new RuntimeException("用户余额不足");
+        }
+        // 扣减余额 update tb_user set balance = balance - ?
+        baseMapper.deductBalance(id, money);
+    }
 }
